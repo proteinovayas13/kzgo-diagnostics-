@@ -12,8 +12,7 @@ Stack: Python · FastAPI · LangGraph · InfluxDB · Pydantic
 Установка
 Запустите все сервисы одной командой:
 
-bash
-
+```bash
 git clone https://github.com/your-org/KZGO-Diagnostics.git
 cd KZGO-Diagnostics
 cp .env.example .env
@@ -24,8 +23,7 @@ python -m src.api.server
 ## Эмулятор датчиков (Sensor Emulator)
 Для тестирования и демонстрации:
 
-bash
-
+```bash
 python -m src.sensor_emulator
 
 Полная документация по установке, настройке InfluxDB, переменным окружения и портам доступна в INSTALL.md [INSTALL.md](INSTALL.md) .
