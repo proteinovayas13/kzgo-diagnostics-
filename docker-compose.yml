@@ -1,0 +1,56 @@
+﻿version: '3.8'
+
+services:
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - INFLUXDB_ORG=my-org
+      - INFLUXDB_BUCKET=kzgo_telemetry
+      - INFLUXDB_TOKEN=my-super-secret-token
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=kzgo_diagnostics
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=secure_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+  vector_db:
+    image: chromadb/chroma:latest
+    container_name: chromadb
+    ports:
+      - "8001:8000"
+    volumes:
+      - chromadb_data:/chroma/chroma
+
+volumes:
+  influxdb_data:
+  postgres_data:
+  grafana_data:
+  chromadb_data:

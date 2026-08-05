@@ -1,0 +1,796 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>KZGO Диагностика — Эмуляция датчиков</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        h1 span {
+            background: #667eea;
+            color: white;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 16px;
+        }
+        .status-bar {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-dot.online { background: #2ecc71; }
+        .status-dot.offline { background: #e74c3c; }
+        
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .preset-buttons button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .preset-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .preset-normal { background: #2ecc71; color: white; }
+        .preset-warning { background: #f39c12; color: white; }
+        .preset-critical { background: #e74c3c; color: white; }
+        
+        .emulator-controls {
+            background: #f0f0f0;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .emulator-controls label {
+            font-weight: 600;
+            color: #34495e;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .emulator-controls input[type="range"] {
+            width: 150px;
+            accent-color: #667eea;
+        }
+        .emulator-controls .toggle-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            background: #667eea;
+            color: white;
+            transition: all 0.3s;
+        }
+        .emulator-controls .toggle-btn:hover {
+            transform: scale(1.05);
+        }
+        .emulator-controls .toggle-btn.running {
+            background: #e74c3c;
+        }
+        .emulator-controls .toggle-btn.running:hover {
+            background: #c0392b;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .form-group label {
+            font-weight: 600;
+            color: #34495e;
+            font-size: 14px;
+        }
+        .form-group label small {
+            font-weight: normal;
+            color: #95a5a6;
+            font-size: 12px;
+        }
+        
+        /* ===== ЦВЕТОВАЯ ШКАЛА ===== */
+        .form-group input {
+            padding: 10px 15px;
+            border: 3px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        .form-group input:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(102,126,234,0.3);
+        }
+        
+        /* Норма — зелёный */
+        .form-group input.value-normal {
+            border-color: #2ecc71;
+            background: #eafaf1;
+            color: #1a7a42;
+            box-shadow: 0 0 10px rgba(46,204,113,0.15);
+        }
+        
+        /* Предупреждение — жёлтый/оранжевый */
+        .form-group input.value-warning {
+            border-color: #f39c12;
+            background: #fef9e7;
+            color: #b7950b;
+            box-shadow: 0 0 15px rgba(243,156,18,0.25);
+            animation: warningPulse 1s infinite;
+        }
+        
+        /* Критично — красный с пульсацией */
+        .form-group input.value-critical {
+            border-color: #e74c3c;
+            background: #fdedec;
+            color: #922b21;
+            box-shadow: 0 0 20px rgba(231,76,60,0.35);
+            animation: criticalPulse 0.7s infinite;
+        }
+        
+        @keyframes warningPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(243,156,18,0.25); }
+            50% { box-shadow: 0 0 30px rgba(243,156,18,0.5); }
+        }
+        @keyframes criticalPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(231,76,60,0.35); transform: scale(1); }
+            50% { box-shadow: 0 0 45px rgba(231,76,60,0.7); transform: scale(1.02); }
+        }
+        
+        /* Анимация при обновлении */
+        .form-group input.flash {
+            animation: flash 0.3s ease;
+        }
+        @keyframes flash {
+            0% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5a67d8; transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102,126,234,0.4); }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; transform: translateY(-2px); }
+        .btn-success { background: #2ecc71; color: white; }
+        .btn-success:hover { background: #27ae60; transform: translateY(-2px); }
+        .btn-warning { background: #f39c12; color: white; }
+        .btn-warning:hover { background: #d68910; transform: translateY(-2px); }
+        
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+            display: none;
+        }
+        .result.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .severity-badge {
+            display: inline-block;
+            padding: 3px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .severity-badge.info { background: #3498db; color: white; }
+        .severity-badge.warning { background: #f39c12; color: white; }
+        .severity-badge.critical { background: #e74c3c; color: white; }
+        
+        .anomaly-item {
+            background: white;
+            padding: 12px 15px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border-left: 4px solid #f39c12;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .anomaly-item.critical {
+            border-left-color: #e74c3c;
+            background: #fdf2f2;
+        }
+        .anomaly-item.new {
+            animation: newAnomaly 0.5s ease;
+        }
+        @keyframes newAnomaly {
+            0% { transform: scale(0.9); opacity: 0; }
+            50% { transform: scale(1.03); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .recommendation-box {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .diagnosis-box {
+            background: #fef9e7;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #95a5a6;
+            margin-top: 30px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            🏗️ KZGO Диагностика
+            <span>v1.0</span>
+        </h1>
+        <p class="subtitle">Система предиктивной диагностики горного оборудования в реальном времени</p>
+        
+        <div class="status-bar">
+            <div>
+                <span class="status-dot online" id="statusDot"></span>
+                <span id="statusText">✅ Эмуляция: Активна</span>
+            </div>
+            <div>
+                <span id="timestampDisplay">Время: --:--:--</span>
+            </div>
+        </div>
+        
+        <div class="preset-buttons">
+            <button class="preset-normal" onclick="loadPreset('normal')">✅ Норма</button>
+            <button class="preset-warning" onclick="loadPreset('warning')">⚠️ Предупреждение</button>
+            <button class="preset-critical" onclick="loadPreset('critical')">🔴 Критично</button>
+        </div>
+        
+        <!-- Эмулятор -->
+        <div class="emulator-controls">
+            <label>
+                🎯 Эмуляция
+                <button class="toggle-btn running" id="emulatorBtn" onclick="toggleEmulator()">⏸️ Пауза</button>
+            </label>
+            <label>
+                Скорость:
+                <input type="range" id="emulatorSpeed" min="200" max="2000" value="600" step="100">
+                <span id="speedDisplay">600 мс</span>
+            </label>
+            <label>
+                Цикл: <span id="cycleCount">0</span>
+            </label>
+        </div>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Оборудование</label>
+                <input type="text" id="equipment_id" value="ЭКГ-8И_№27">
+            </div>
+            <div class="form-group">
+                <label>Вибрация X <small>(мм/с, норма &lt; 3.0)</small></label>
+                <input type="number" id="vibration_x" value="2.4" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Вибрация Y <small>(мм/с, норма &lt; 3.0)</small></label>
+                <input type="number" id="vibration_y" value="2.8" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Температура <small>(°C, норма &lt; 80)</small></label>
+                <input type="number" id="temperature" value="75.5" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Ток <small>(А, норма &lt; 160)</small></label>
+                <input type="number" id="current" value="145.2" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Давление <small>(МПа, норма 10-14)</small></label>
+                <input type="number" id="pressure" value="12.5" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Обороты <small>(RPM, норма 1450-1520)</small></label>
+                <input type="number" id="rpm" value="1470" step="1">
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="diagnose()">🔍 Провести диагностику</button>
+            <button class="btn btn-danger" onclick="clearResult()">🗑️ Очистить</button>
+        </div>
+        
+        <div id="result" class="result">
+            <h3 style="margin-bottom:15px;">📊 Результат диагностики</h3>
+            <div id="diagnosis_result"></div>
+        </div>
+        
+        <div class="footer">
+            KZGO Diagnostics System © 2026 | Эмуляция датчиков в реальном времени
+        </div>
+    </div>
+
+    <script>
+        // ===== ПЕРЕМЕННЫЕ ЭМУЛЯТОРА =====
+        let emulatorInterval = null;
+        let emulatorRunning = true;
+        let cycleCounter = 0;
+        
+        // Текущие состояния датчиков
+        const sensorState = {
+            vibration_x: 2.4,
+            vibration_y: 2.8,
+            temperature: 75.5,
+            current: 145.2,
+            pressure: 12.5,
+            rpm: 1470
+        };
+        
+        // Диапазоны и шаги изменения
+        const sensorRanges = {
+            vibration_x: { min: 1.0, max: 9.0, step: 0.15 },
+            vibration_y: { min: 1.0, max: 8.0, step: 0.15 },
+            temperature: { min: 60.0, max: 100.0, step: 0.3 },
+            current: { min: 120.0, max: 200.0, step: 0.5 },
+            pressure: { min: 2.0, max: 16.0, step: 0.2 },
+            rpm: { min: 1400, max: 1550, step: 2 }
+        };
+        
+        // ===== НОРМЫ ДЛЯ ЦВЕТОВОЙ ШКАЛЫ =====
+        const norms = {
+            vibration_x: { normal: 3.0, warning: 5.0 },
+            vibration_y: { normal: 3.0, warning: 5.0 },
+            temperature: { normal: 80, warning: 88 },
+            current: { normal: 160, warning: 175 },
+            pressure: { normal_min: 10, normal_max: 14, warning_min: 8, warning_max: 15.5 },
+            rpm: { normal_min: 1450, normal_max: 1520, warning_min: 1420, warning_max: 1540 }
+        };
+        
+        // ===== ОПРЕДЕЛЕНИЕ СТАТУСА ЗНАЧЕНИЯ =====
+        function getValueStatus(id, value) {
+            const norm = norms[id];
+            if (!norm) return 'normal';
+            
+            if (id === 'pressure' || id === 'rpm') {
+                const min = norm.normal_min;
+                const max = norm.normal_max;
+                const wMin = norm.warning_min;
+                const wMax = norm.warning_max;
+                
+                if (value >= min && value <= max) return 'normal';
+                if ((value >= wMin && value < min) || (value > max && value <= wMax)) return 'warning';
+                return 'critical';
+            }
+            
+            if (value < norm.normal) return 'normal';
+            if (value < norm.warning) return 'warning';
+            return 'critical';
+        }
+        
+        // ===== ПРИМЕНЕНИЕ ЦВЕТА К ПОЛЮ =====
+        function applyColor(inputId, value) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            
+            const status = getValueStatus(inputId, value);
+            input.classList.remove('value-normal', 'value-warning', 'value-critical');
+            
+            if (status === 'normal') {
+                input.classList.add('value-normal');
+            } else if (status === 'warning') {
+                input.classList.add('value-warning');
+            } else if (status === 'critical') {
+                input.classList.add('value-critical');
+            }
+        }
+        
+        // ===== ЭФФЕКТ МИГАНИЯ =====
+        function flashInput(inputId) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            input.classList.remove('flash');
+            void input.offsetWidth;
+            input.classList.add('flash');
+        }
+        
+        // ===== ОБНОВЛЕНИЕ ДАТЧИКОВ =====
+        function updateSensors() {
+            if (!emulatorRunning) return;
+            
+            const ids = ['vibration_x', 'vibration_y', 'temperature', 'current', 'pressure', 'rpm'];
+            
+            ids.forEach(id => {
+                const range = sensorRanges[id];
+                const currentVal = sensorState[id];
+                const delta = (Math.random() - 0.5) * 2 * range.step;
+                let newVal = currentVal + delta;
+                
+                if (newVal < range.min) newVal = range.min + (range.step * 0.5);
+                if (newVal > range.max) newVal = range.max - (range.step * 0.5);
+                
+                const decimals = id === 'rpm' ? 0 : 1;
+                newVal = Math.round(newVal * Math.pow(10, decimals)) / Math.pow(10, decimals);
+                
+                sensorState[id] = newVal;
+                const input = document.getElementById(id);
+                if (input) {
+                    input.value = newVal;
+                    applyColor(id, newVal);
+                    flashInput(id);
+                }
+            });
+            
+            cycleCounter++;
+            document.getElementById('cycleCount').textContent = cycleCounter;
+            
+            // Автоматическая диагностика
+            diagnoseSilent();
+        }
+        
+        // ===== УПРАВЛЕНИЕ ЭМУЛЯТОРОМ =====
+        function startEmulator() {
+            if (emulatorInterval) clearInterval(emulatorInterval);
+            const speed = parseInt(document.getElementById('emulatorSpeed').value);
+            document.getElementById('speedDisplay').textContent = speed + ' мс';
+            emulatorInterval = setInterval(updateSensors, speed);
+            emulatorRunning = true;
+            const btn = document.getElementById('emulatorBtn');
+            btn.textContent = '⏸️ Пауза';
+            btn.className = 'toggle-btn running';
+            document.getElementById('statusText').textContent = '✅ Эмуляция: Активна';
+        }
+        
+        function stopEmulator() {
+            if (emulatorInterval) {
+                clearInterval(emulatorInterval);
+                emulatorInterval = null;
+            }
+            emulatorRunning = false;
+            const btn = document.getElementById('emulatorBtn');
+            btn.textContent = '▶️ Старт';
+            btn.className = 'toggle-btn';
+            document.getElementById('statusText').textContent = '⏸️ Эмуляция: Приостановлена';
+        }
+        
+        function toggleEmulator() {
+            if (emulatorRunning) {
+                stopEmulator();
+            } else {
+                startEmulator();
+            }
+        }
+        
+        // Обновление скорости
+        document.getElementById('emulatorSpeed').addEventListener('input', function() {
+            if (emulatorRunning) {
+                startEmulator();
+            } else {
+                document.getElementById('speedDisplay').textContent = this.value + ' мс';
+            }
+        });
+        
+        // ===== ВРЕМЯ =====
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('timestampDisplay').textContent = 
+                'Время: ' + now.toLocaleTimeString('ru-RU');
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // ===== ПРЕСЕТЫ =====
+        function loadPreset(type) {
+            const presets = {
+                normal: {
+                    vibration_x: 2.4,
+                    vibration_y: 2.8,
+                    temperature: 75.5,
+                    current: 145.2,
+                    pressure: 12.5,
+                    rpm: 1470
+                },
+                warning: {
+                    vibration_x: 4.5,
+                    vibration_y: 4.2,
+                    temperature: 82.5,
+                    current: 156.3,
+                    pressure: 12.8,
+                    rpm: 1485
+                },
+                critical: {
+                    vibration_x: 7.5,
+                    vibration_y: 6.8,
+                    temperature: 92.5,
+                    current: 185.0,
+                    pressure: 5.5,
+                    rpm: 1460
+                }
+            };
+            
+            const data = presets[type];
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        input.value = data[key];
+                        sensorState[key] = data[key];
+                        applyColor(key, data[key]);
+                        flashInput(key);
+                    }
+                });
+                diagnoseSilent();
+            }
+        }
+        
+        // ===== ПОЛУЧЕНИЕ ДАННЫХ =====
+        function getValue(id) {
+            const val = document.getElementById(id).value;
+            return val ? parseFloat(val) : null;
+        }
+        
+        function getString(id) {
+            return document.getElementById(id).value || '';
+        }
+        
+        // ===== ЛОКАЛЬНАЯ ЭМУЛЯЦИЯ ДИАГНОСТИКИ =====
+        let diagnosisCounter = 0;
+        
+        function generateDiagnosis(data) {
+            const hasAnomaly = Math.random() > 0.45;
+            const severity = ['info', 'warning', 'critical'][Math.floor(Math.random() * 3)];
+            const anomalies = [];
+            
+            if (hasAnomaly) {
+                const params = [
+                    { key: 'vibration_x', name: 'Вибрация X' },
+                    { key: 'vibration_y', name: 'Вибрация Y' },
+                    { key: 'temperature', name: 'Температура' },
+                    { key: 'current', name: 'Ток' },
+                    { key: 'pressure', name: 'Давление' },
+                    { key: 'rpm', name: 'Обороты' }
+                ];
+                
+                const count = Math.floor(Math.random() * 3) + 1;
+                const shuffled = params.sort(() => Math.random() - 0.5);
+                
+                for (let i = 0; i < count && i < shuffled.length; i++) {
+                    const p = shuffled[i];
+                    const val = data[p.key] || 0;
+                    anomalies.push({
+                        parameter: p.name,
+                        value: val,
+                        severity: i === 0 ? severity : 'warning',
+                        description: `Превышение нормы по параметру ${p.name}`
+                    });
+                }
+            }
+            
+            return {
+                has_anomalies: hasAnomaly,
+                severity: severity,
+                anomalies: anomalies,
+                diagnosis: hasAnomaly ? {
+                    root_cause: 'Перегрузка оборудования, требуется проверка',
+                    estimated_time_to_failure: '2-4 часа',
+                    confidence: 0.8 + Math.random() * 0.15
+                } : null,
+                recommendation: hasAnomaly ? 
+                    'Рекомендуется снизить нагрузку и провести внеплановое техническое обслуживание' : 
+                    'Оборудование работает в штатном режиме'
+            };
+        }
+        
+        function performDiagnosis(resultContent) {
+            const data = {
+                equipment_id: getString('equipment_id'),
+                vibration_x: getValue('vibration_x'),
+                vibration_y: getValue('vibration_y'),
+                temperature: getValue('temperature'),
+                current: getValue('current'),
+                pressure: getValue('pressure'),
+                rpm: getValue('rpm')
+            };
+            
+            const result = generateDiagnosis(data);
+            diagnosisCounter++;
+            
+            let html = '';
+            
+            if (result.has_anomalies) {
+                const severityColor = result.severity === 'critical' ? '#e74c3c' : 
+                                      result.severity === 'warning' ? '#f39c12' : '#3498db';
+                html += `<p style="font-size:18px;font-weight:bold;color:${severityColor};">⚠️ ОБНАРУЖЕНЫ АНОМАЛИИ!</p>`;
+                html += `<p><strong>Серьезность:</strong> <span class="severity-badge ${result.severity}">${result.severity.toUpperCase()}</span></p>`;
+                html += `<p style="font-size:12px;color:#95a5a6;">обновление #${diagnosisCounter}</p>`;
+                
+                html += `<p style="margin:15px 0 10px;"><strong>Обнаруженные аномалии (${result.anomalies.length}):</strong></p>`;
+                result.anomalies.forEach((a, index) => {
+                    const cls = a.severity === 'critical' ? 'critical' : '';
+                    const newClass = index < 3 ? 'new' : '';
+                    html += `
+                        <div class="anomaly-item ${cls} ${newClass}">
+                            <span><strong>${a.parameter}:</strong> ${a.value}</span>
+                            <span class="severity-badge ${a.severity}">${a.severity}</span>
+                            <span style="font-size:12px;color:#7f8c8d;width:100%;">${a.description}</span>
+                        </div>
+                    `;
+                });
+                
+                if (result.diagnosis) {
+                    html += `<div class="diagnosis-box">
+                        <p><strong>🔬 Диагноз:</strong> ${result.diagnosis.root_cause}</p>
+                        <p><strong>⏱️ Время до отказа:</strong> ${result.diagnosis.estimated_time_to_failure}</p>
+                        <p><strong>📊 Уверенность:</strong> ${Math.round(result.diagnosis.confidence * 100)}%</p>
+                    </div>`;
+                }
+                
+                html += `<div class="recommendation-box">
+                    <strong>💡 Рекомендация:</strong><br>
+                    ${result.recommendation}
+                </div>`;
+            } else {
+                html += `<p style="font-size:18px;color:#27ae60;">✅ Аномалий не обнаружено</p>`;
+                html += `<p style="color:#7f8c8d;">Оборудование работает в штатном режиме</p>`;
+                html += `<p style="font-size:12px;color:#95a5a6;">обновление #${diagnosisCounter}</p>`;
+            }
+            
+            resultContent.innerHTML = html;
+        }
+        
+        // ===== ДИАГНОСТИКА =====
+        async function diagnose() {
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('diagnosis_result');
+            
+            resultDiv.className = 'result show';
+            resultContent.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>⏳ Выполняется диагностика...</p>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                performDiagnosis(resultContent);
+            }, 500);
+        }
+        
+        async function diagnoseSilent() {
+            const resultContent = document.getElementById('diagnosis_result');
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result show';
+            performDiagnosis(resultContent);
+        }
+        
+        function clearResult() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result';
+            document.getElementById('diagnosis_result').innerHTML = '';
+        }
+        
+        // ===== ПРОВЕРКА СТАТУСА =====
+        function checkStatus() {
+            document.getElementById('statusDot').className = 'status-dot online';
+        }
+        checkStatus();
+        setInterval(checkStatus, 5000);
+        
+        // ===== АВТОЗАПУСК =====
+        startEmulator();
+        
+        // Первая диагностика через 1 секунду
+        setTimeout(() => {
+            diagnoseSilent();
+        }, 1000);
+    </script>
+</body>
+</html>
