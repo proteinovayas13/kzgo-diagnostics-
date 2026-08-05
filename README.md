@@ -14,6 +14,7 @@ Stack: Python · FastAPI · LangGraph · InfluxDB · Pydantic
 Запустите все сервисы одной командой:
 
 bash
+
 git clone https://github.com/your-org/KZGO-Diagnostics.git
 cd KZGO-Diagnostics
 cp .env.example .env
@@ -25,9 +26,10 @@ python -m src.api.server
 Для тестирования и демонстрации:
 
 bash
+
 python -m src.sensor_emulator
 
-Полная документация по установке, настройке InfluxDB, переменным окружения и портам доступна в INSTALL.md.
+Полная документация по установке, настройке InfluxDB, переменным окружения и портам доступна в INSTALL.md [INSTALL.md](INSTALL.md) .
 
 Миграция с версии 1.x
 Если вы обновляетесь с более старой версии, воспользуйтесь инструментом миграции. Новые установки могут пропустить этот шаг.
@@ -130,7 +132,7 @@ LLM-диагностика — опционально, по ключу OpenAI
 !Версия V.2.0 После запуска реальных датчиков возможно уже в продакшн в реал тайм)
 
 ## Документация
-INSTALL.md — полная установка [INSTALL.md](http://localhost:8000/docs/install)
+INSTALL.md — полная установка [INSTALL.md](https://github.com/proteinovayas13/kzgo-diagnostics-/blob/main/INSTALL.md) (http://localhost:8000/docs/install)
 
 
 API Reference — все эндпоинты [API.md](http://localhost:8000/docs/api)
