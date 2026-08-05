@@ -7,7 +7,7 @@ KZGO-Diagnostics | Trendshift
 
 Stack: Python · FastAPI · LangGraph · InfluxDB · Pydantic
 
-![Демонстрация работы v1.0](screenshots/demo.gif)
+![Демонстрация работы v1.0] ![Демо](screenshots/demo.gif)
 
 
 Установка
