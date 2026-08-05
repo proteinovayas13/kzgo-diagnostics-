@@ -7,8 +7,7 @@ KZGO-Diagnostics | Trendshift
 
 Stack: Python · FastAPI · LangGraph · InfluxDB · Pydantic
 
-![Демонстрация работы v1.0] ![Демо](https://raw.githubusercontent.com/proteinovayas13/kzgo-diagnostics-/main/screenshots/demo.gif)
-
+![Демонстрация работы системы](screenshots/demo.gif)
 
 Установка
 Запустите все сервисы одной командой:
@@ -131,48 +130,3 @@ LLM-диагностика — опционально, по ключу OpenAI
 ## Бенчмарк (оценка эффективности)
 
 !Версия V.2.0 После запуска реальных датчиков возможно уже в продакшн в реал тайм)
-
-## Структура проекта
-
-На разработаку версии v1.0 ушло 1.5 мес
-
-kzgo-diagnostics/
-│
-├── src/
-│   ├── api/
-│   │   ├── server.py              # FastAPI сервер
-│   │   ├── __init__.py
-│   │   └── static/
-│   │       └── index.html         # Главная страница
-│   │
-│   ├── agents/
-│   │   ├── anomaly_detection_agent.py
-│   │   ├── diagnosis_agent.py
-│   │   ├── ingestion_agent.py
-│   │   └── __init__.py
-│   │
-│   ├── models/
-│   │   ├── equipment.py           # Модель оборудования
-│   │   └── __init__.py
-│   │
-│   ├── config/                    # Конфигурация
-│   │
-│   ├── utils/                     # Вспомогательные функции
-│   │   └── __init__.py
-│   │
-│   ├── orchestrator.py            # Оркестратор агентов
-│   ├── sensor_emulator.py         # Эмуляция датчиков
-│   └── __init__.py
-│
-├── tests/
-│   └── __init__.py
-│
-├── venv/                          # Виртуальное окружение
-│
-├── .env
-├── .gitignore
-├── requirements.txt
-├── docker-compose.yml
-├── run_emulator.ps1
-├── README.md
-└── INSTALL.md
