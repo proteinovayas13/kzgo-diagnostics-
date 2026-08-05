@@ -5,8 +5,6 @@
 **Формат данных:** `JSON`  
 **Кодировка:** `UTF-8`
 
----
-
 ## 📋 Содержание
 
 - [Общие эндпоинты](#-общие-эндпоинты)
@@ -28,7 +26,6 @@
 - [Примеры использования](#-примеры-использования)
 - [Лимиты и политики](#-лимиты-и-политики)
 
----
 
 ## 🌐 Общие эндпоинты
 
@@ -39,6 +36,7 @@
 **Запрос:**
 ```bash
 curl http://localhost:8000/
+```
 Ответ:
 
 json
@@ -62,9 +60,9 @@ GET /health — Проверка здоровья
 Проверяет состояние сервиса и всех зависимостей (InfluxDB, OpenAI API).
 
 Запрос:
-
-bash
+```bash
 curl http://localhost:8000/health
+```
 Ответ:
 
 json
@@ -95,7 +93,7 @@ POST /diagnostics/single — Одиночная диагностика
 
 Запрос:
 
-bash
+```bash
 curl -X POST http://localhost:8000/diagnostics/single \
   -H "Content-Type: application/json" \
   -d '{
@@ -108,6 +106,7 @@ curl -X POST http://localhost:8000/diagnostics/single \
     "pressure": 12.8,
     "rpm": 1485
   }'
+```
 Параметры запроса (JSON):
 
 Поле	Тип	Обязательное	Описание
@@ -207,7 +206,7 @@ POST /diagnostics/batch — Пакетная диагностика
 
 Запрос:
 
-bash
+```bash
 curl -X POST http://localhost:8000/diagnostics/batch \
   -H "Content-Type: application/json" \
   -d '{
@@ -226,6 +225,7 @@ curl -X POST http://localhost:8000/diagnostics/batch \
       }
     ]
   }'
+```
 Параметры запроса (JSON):
 
 Поле	Тип	Обязательное	Описание
@@ -290,8 +290,10 @@ GET /equipment/list — Список оборудования
 
 Запрос:
 
-bash
+```bash
 curl http://localhost:8000/equipment/list
+```
+
 Ответ:
 
 json
@@ -340,8 +342,10 @@ GET /equipment/{equipment_id}/history — История оборудовани�
 
 Запрос:
 
-bash
+```bash
 curl "http://localhost:8000/equipment/ЭКГ-8И_№27/history?hours=24"
+```
+
 Параметры:
 
 Параметр	Тип	Обязательное	Описание
@@ -398,8 +402,10 @@ GET /web — Веб-интерфейс
 
 Запрос:
 
-bash
+```bash
 curl http://localhost:8000/web
+```
+
 Ответ: HTML-страница с формой ввода телеметрии.
 
 Примечание: Для использования откройте в браузере: http://localhost:8000/web
@@ -409,8 +415,10 @@ GET /static/ — Статические файлы
 
 Запрос:
 
-bash
+```bash
 curl http://localhost:8000/static/index.html
+```
+
 Примечание: Все статические файлы находятся в папке src/api/static/.
 
 📖 Документация
@@ -419,8 +427,10 @@ GET /docs — Swagger UI
 
 Запрос:
 
-bash
+```bash
 curl http://localhost:8000/docs
+```
+
 Примечание: Откройте в браузере для использования.
 
 GET /redoc — ReDoc
@@ -428,8 +438,10 @@ GET /redoc — ReDoc
 
 Запрос:
 
-bash
+```bash
 curl http://localhost:8000/redoc
+```
+
 Примечание: Откройте в браузере для использования.
 
 ⚠️ Коды ошибок
@@ -460,7 +472,7 @@ curl -X POST http://localhost:8000/diagnostics/single \
     "pressure": 12.5
   }'
 3. Одиночная диагностика (критическая)
-bash
+```bash
 curl -X POST http://localhost:8000/diagnostics/single \
   -H "Content-Type: application/json" \
   -d '{
@@ -470,6 +482,8 @@ curl -X POST http://localhost:8000/diagnostics/single \
     "temperature": 92.5,
     "pressure": 5.5
   }'
+```
+
 4. Пакетная диагностика
 bash
 curl -X POST http://localhost:8000/diagnostics/batch \
