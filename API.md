@@ -36,7 +36,7 @@
 **Запрос:**
 ```bash
 curl http://localhost:8000/
-```
+
 Ответ:
 
 json
@@ -62,7 +62,7 @@ GET /health — Проверка здоровья
 Запрос:
 ```bash
 curl http://localhost:8000/health
-```
+
 Ответ:
 
 json
@@ -106,7 +106,7 @@ curl -X POST http://localhost:8000/diagnostics/single \
     "pressure": 12.8,
     "rpm": 1485
   }'
-```
+
 Параметры запроса (JSON):
 
 Поле	Тип	Обязательное	Описание
@@ -225,7 +225,7 @@ curl -X POST http://localhost:8000/diagnostics/batch \
       }
     ]
   }'
-```
+
 Параметры запроса (JSON):
 
 Поле	Тип	Обязательное	Описание
@@ -292,7 +292,6 @@ GET /equipment/list — Список оборудования
 
 ```bash
 curl http://localhost:8000/equipment/list
-```
 
 Ответ:
 
@@ -344,7 +343,6 @@ GET /equipment/{equipment_id}/history — История оборудовани�
 
 ```bash
 curl "http://localhost:8000/equipment/ЭКГ-8И_№27/history?hours=24"
-```
 
 Параметры:
 
@@ -404,7 +402,6 @@ GET /web — Веб-интерфейс
 
 ```bash
 curl http://localhost:8000/web
-```
 
 Ответ: HTML-страница с формой ввода телеметрии.
 
@@ -417,7 +414,7 @@ GET /static/ — Статические файлы
 
 ```bash
 curl http://localhost:8000/static/index.html
-```
+
 
 Примечание: Все статические файлы находятся в папке src/api/static/.
 
@@ -429,7 +426,6 @@ GET /docs — Swagger UI
 
 ```bash
 curl http://localhost:8000/docs
-```
 
 Примечание: Откройте в браузере для использования.
 
@@ -440,7 +436,6 @@ GET /redoc — ReDoc
 
 ```bash
 curl http://localhost:8000/redoc
-```
 
 Примечание: Откройте в браузере для использования.
 
@@ -461,7 +456,7 @@ json
 bash
 curl http://localhost:8000/health
 2. Одиночная диагностика (норма)
-bash
+```bash
 curl -X POST http://localhost:8000/diagnostics/single \
   -H "Content-Type: application/json" \
   -d '{
@@ -482,7 +477,6 @@ curl -X POST http://localhost:8000/diagnostics/single \
     "temperature": 92.5,
     "pressure": 5.5
   }'
-```
 
 4. Пакетная диагностика
 bash
@@ -506,8 +500,9 @@ curl -X POST http://localhost:8000/diagnostics/batch \
 bash
 curl "http://localhost:8000/equipment/ЭКГ-8И_№27/history?hours=48"
 6. Список оборудования
-bash
+```bash
 curl http://localhost:8000/equipment/list
+
 7. Веб-интерфейс
 Откройте в браузере: http://localhost:8000/web
 
@@ -517,28 +512,14 @@ curl http://localhost:8000/equipment/list
 Максимальный период истории	168 часов (7 дней)
 Таймаут запроса	30 секунд
 Поддерживаемые форматы timestamp	ISO 8601 (2026-08-05T10:00:00Z)
-📞 Поддержка
-🐞 Баг-репорты: GitHub Issues
+
 
 💡 Вопросы и идеи: GitHub Discussions
 
-📧 Почта: support@kzgo-diagnostics.com
+📧 Почта: urevna111@mail.ru
 
 API — это не просто интерфейс. Это язык, на котором система говорит с теми, кто её контролирует.
 
-text
-
----
-
-## Как использовать в README.md
-
-Теперь в главном `README.md` добавьте:
-
-```markdown
-📚 Документация
-- [INSTALL.md](INSTALL.md) — полная установка
-- [API.md](API.md) — все эндпоинты
-На GitHub ссылка [API.md](API.md) автоматически откроет этот файл.
 
 Дополнительно: если хотите, чтобы API.md открывался в веб-интерфейсе
 Добавьте в src/api/server.py:
