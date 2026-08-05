@@ -19,12 +19,14 @@ cp .env.example .env
 # Заполните конфигурацию в .env (InfluxDB, OpenAI API и пороговые значения)
 # Начинается имуляция данных
 python -m src.api.server
+```
 
 ## Эмулятор датчиков (Sensor Emulator)
 Для тестирования и демонстрации:
 
 ```bash
 python -m src.sensor_emulator
+```
 
 Полная документация по установке, настройке InfluxDB, переменным окружения и портам доступна в INSTALL.md [INSTALL.md](INSTALL.md) .
 -API Reference — все эндпоинты [API.md](API.md) (http://localhost:8000/docs/api)
